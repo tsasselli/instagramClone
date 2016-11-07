@@ -12,60 +12,78 @@ import Parse
 
 class ViewController: UIViewController {
     
+    @IBOutlet var emailTextField: UITextField!
+    @IBOutlet var passwordTextField: UITextField!
+    @IBOutlet var changSignupModeButton: UIButton!
+    @IBOutlet var messageLabel: UILabel!
+    @IBOutlet var signupButton: UIButton!
+    
+    var signupMode = true
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+      
+    }
+    
+    func createAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        //       let user = PFObject(className: "Users")
-        //
-        //        user["name"] = "Travis"
-        //        user.saveInBackground() {
-        //            (success, error) in
-        //
-        //        // added test for success 11th July 2016
-        //
-        //            if success {
-        //
-        //                print("Object has been saved.")
-        //
-        //            } else {
-        //
-        //                if error != nil {
-        //
-        //                    print (error as Any)
-        //
-        //                } else {
-        //
-        //                    print ("Error")
-        //                }
-        //
-        //            }
-        //
-        //        }
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (action) in
+            self.dismiss(animated: true, completion: nil)
+            
+        }))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    @IBAction func signupOrLogin(_ sender: Any) {
         
-        let query = PFQuery(className: "Users")
+        if emailTextField.text! == "" || passwordTextField.text! == "" {
+           createAlert(title: "Error in form", message: "Please enter an email and password")
         
-        query.getObjectInBackground(withId: "gwKcGAw2Rn") { (object, error) in
-            if error != nil {
-                print(error)
-            } else {
-                if let user = object {
-                    user["name"] = "Ryan"
-                    user.saveInBackground(block: { (success, error) in
-                        if success {
-                            print("Saved")
-                        } else {
-                            print("ERROR")
-                        }
+        } else {
+            if signupMode {
+                //Sign Up 
+                
+                let user = PFUser()
+                
+                user.username = emailTextField.text
+                user.email = emailTextField.text
+                user.password = passwordTextField.text
+                
+                user.signUpInBackground(block: { (success, error) in
+                    
+                    if error != nil {
+                        print(error)
+                       
+                        self.createAlert(title: "Error in form", message: "Parse Error")
                         
-                    })
-                }
+                    }
+                })
             }
         }
         
+        
     }
-        override func didReceiveMemoryWarning() {
-            super.didReceiveMemoryWarning()
-            // Dispose of any resources that can be recreated.
+    
+    
+    @IBAction func changeSignupMode(_ sender: Any) {
+        if signupMode {
+            // Change to login mode
+            signupButton.setTitle("Log In", for: [])
+            
+            changSignupModeButton.setTitle("Sign Up", for: [])
+            
+            messageLabel.text = "Don't have an account?"
+            
+        } else {
+            //Change signup mode 
+            
+            signupButton.setTitle("Sign UP", for: [])
+            changSignupModeButton.setTitle("Sign Up", for: [])
+            messageLabel.text = "Already have an account?"
+            signupMode = true
+        
         }
+    }
+    
 }
