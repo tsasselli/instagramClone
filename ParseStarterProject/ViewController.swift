@@ -12,6 +12,7 @@ import Parse
 
 class ViewController: UIViewController {
     
+    @IBOutlet var welcomeLabel: UILabel!
     @IBOutlet var emailTextField: UITextField!
     @IBOutlet var passwordTextField: UITextField!
     @IBOutlet var changSignupModeButton: UIButton!
@@ -32,6 +33,8 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        welcomeLabel.layer.masksToBounds = true 
+        welcomeLabel.layer.cornerRadius = 5
       
     }
     
