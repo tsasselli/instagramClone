@@ -19,6 +19,16 @@ class ViewController: UIViewController {
     @IBOutlet var signupButton: UIButton!
     
     var signupMode = true
+    var activityIndicator = UIActivityIndicatorView()
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        if PFUser.current() != nil {
+           
+            performSegue(withIdentifier: "showUserTable", sender: self)
+        }
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,6 +51,15 @@ class ViewController: UIViewController {
            createAlert(title: "Error in form", message: "Please enter an email and password")
         
         } else {
+            
+            activityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 50, height: 50))
+                activityIndicator.center = self.view.center
+                activityIndicator.hidesWhenStopped = true
+                activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
+                view.addSubview(activityIndicator)
+            activityIndicator.startAnimating()
+            UIApplication.shared.beginIgnoringInteractionEvents()
+            
             if signupMode {
                 //Sign Up 
                 
@@ -52,17 +71,50 @@ class ViewController: UIViewController {
                 
                 user.signUpInBackground(block: { (success, error) in
                     
+                self.activityIndicator.stopAnimating()
+                    UIApplication.shared.endIgnoringInteractionEvents()
+                    
                     if error != nil {
-                        print(error)
-                       
-                        self.createAlert(title: "Error in form", message: "Parse Error")
                         
+                        var displayErrorMessage = "Please try again later."
+                        if let errorMessage = error as? NSError {
+                            displayErrorMessage = errorMessage.userInfo["error"] as! String
+                        }
+                        self.createAlert(title: "Signup Error", message: displayErrorMessage)
+                    } else {
+                        print("user already signed up")
+                        
+                       self.performSegue(withIdentifier: "showUserTable", sender: self)
+                    }
+                
+                })
+            
+            } else {
+              
+                //Login Mode
+                
+                PFUser.logInWithUsername(inBackground: emailTextField.text!, password: passwordTextField.text!, block: { (user, error) in
+                    
+                    self.activityIndicator.stopAnimating()
+                    UIApplication.shared.endIgnoringInteractionEvents()
+                    
+                    if error != nil {
+                        
+                        var displayErrorMessage = "Please try again later."
+                        if let errorMessage = error as? NSError {
+                            displayErrorMessage = errorMessage.userInfo["error"] as! String
+                        }
+                        self.createAlert(title: "Login Error", message: displayErrorMessage)
+
+                    } else {
+                        
+                        print("Logged in")
+                        self.performSegue(withIdentifier: "showUserTable", sender: self)
+
                     }
                 })
             }
         }
-        
-        
     }
     
     
@@ -74,16 +126,19 @@ class ViewController: UIViewController {
             changSignupModeButton.setTitle("Sign Up", for: [])
             
             messageLabel.text = "Don't have an account?"
+            signupMode = false
             
         } else {
             //Change signup mode 
             
-            signupButton.setTitle("Sign UP", for: [])
-            changSignupModeButton.setTitle("Sign Up", for: [])
+            signupButton.setTitle("Sign Up", for: [])
+            changSignupModeButton.setTitle("Log In", for: [])
             messageLabel.text = "Already have an account?"
             signupMode = true
         
         }
     }
+    
+    
     
 }
