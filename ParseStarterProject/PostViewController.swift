@@ -13,6 +13,7 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
     @IBOutlet var imageToPost: UIImageView!
     @IBOutlet var messageTextField: UITextField!
     
+    var activityIndicator = UIActivityIndicatorView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,9 +30,10 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (action) in
-            self.dismiss(animated: true, completion: nil)
+            alert.dismiss(animated: true, completion: nil)
             
         }))
+        
         self.present(alert, animated: true, completion: nil)
     }
     
@@ -57,20 +59,31 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
     }
 
     @IBAction func postImage(_ sender: Any) {
+        
+        
+        activityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 50, height: 50))
+        activityIndicator.center = self.view.center
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
+        view.addSubview(activityIndicator)
+        activityIndicator.startAnimating()
+        UIApplication.shared.beginIgnoringInteractionEvents()
+        
+
        
-        var post = PFObject(className: "Posts")
+        let post = PFObject(className: "Posts")
 
         post["message"] = messageTextField.text
         
         post["userId"] = PFUser.current()?.objectId
         
-        let imageData = UIImagePNGRepresentation(imageToPost.image!)
-        
+        let imageData = UIImageJPEGRepresentation(imageToPost.image!, 1)
         let imageFile = PFFile(name: "image.png", data: imageData!)
-        
         post["imageFile"] = imageFile
-        
         post.saveInBackground { (success, error) in
+            
+            self.activityIndicator.stopAnimating()
+            UIApplication.shared.endIgnoringInteractionEvents()
             
             if error != nil {
                 
